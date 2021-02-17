@@ -1,0 +1,25 @@
+# Configuration for an OpenFAAS function. Deploy like this:
+# > faas-cli secret create drivebackup-config.env --from-file=.env
+# > faas-cli secret create drivebackup-google-credential.json --from-file=google-credential.json
+# > faas-cli secret create drivebackup-files.yml --from-file=files.yml
+# > faas-cli publish -f stack.yml --platforms linux/arm/v7,linux/amd64
+# > faas-cli deploy -f stack.yml
+
+version: 1.0
+provider:
+  name: openfaas
+functions:
+  drive-backup:
+    lang: python3
+    handler: ./drivebackup
+    image: ${DOCKER_USER:-jasonprado}/drive-backup:latest
+    annotations:
+      topic: cron-function
+      schedule: "@daily"
+    environment:
+      write_timeout: 20
+      read_timeout: 20
+    secrets:
+      - drivebackup-config.env
+      - drivebackup-google-credential.json
+      - drivebackup-files.yml
